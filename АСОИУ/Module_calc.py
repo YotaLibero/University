@@ -40,22 +40,22 @@ class Calculator:
 
     def square(self, a, b, c):
         discr = b ** 2 - 4 * a * c
-        #print("Дискриминант D = %.2f" % discr)
+        print("Дискриминант D = %.2f" % discr)
         if discr > 0:
             x1 = (-b + math.sqrt(discr)) / (2 * a)
             x2 = (-b - math.sqrt(discr)) / (2 * a)
-            #print("x1 = " + float("{0:.2f}".format(x1)) + "и" + "x2 = " + float("{0:.2f}".format(x2)))
+            print("x1 = " + float("{0:.2f}".format(x1)) + "и" + "x2 = " + float("{0:.2f}".format(x2)))
             res = str("x1 = " + str(float("{0:.2f}".format(x1))) + "  и " +" x2 = " + str(float("{0:.2f}".format(x2))))
             result_x.set(res)
             return res
         elif discr == 0:
             x = -b / (2 * a)
-            #print("x = %.2f" % x)
+            print("x = %.2f" % x)
             res = str("x = " + str(float("{0:.2f}".format(x))))
             result_x.set(res)
             return res
         else:
-            #print("Корней нет")
+            print("Корней нет")
             res = str("Корней нет")
             result_x.set(res)
             return res
