@@ -17,12 +17,8 @@ class TestCalculator(unittest.TestCase):
     def test_divide(self):
         self.assertEqual(self.calculator.divide(10, 2), 5)
 
-    def test_square(self):
-        self.assertEqual(self.calculator.square(3.2, -7.8, 1), "x1 = 2.3  и  x2 = 0.14")
-        self.assertEqual(self.calculator.square(2, 4, 2), "x = -1.0")
-        self.assertEqual(self.calculator.square(8, 4, 2), "Корней нет")
-
 
 # Executing the tests in the above test case class
 if __name__ == "__main__":
     unittest.main()
+
