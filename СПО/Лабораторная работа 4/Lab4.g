@@ -3,13 +3,13 @@ options
 {language = CSharp3;}
 
 @header
-{ using translatorCoursework;}
+{ using TranslatorLab;}
 
 @members
 {
 	Emitter emitter; 
 	
-	public Lab4Parser(ITokenStream input, Emitter emitter): this(input) 
+	public courseworkParser(ITokenStream input, Emitter emitter): this(input) 
 	{
 		this.emitter = emitter;
 	}
@@ -20,15 +20,15 @@ start_rule: statement*;
 
 statement : declaration SEMI
 	| if
-	| while
+	| cycle
 	| switch
 	| assign_exp SEMI
 	| dec_or_inc SEMI
 	| expression (math_op expression {emitter.AddOperation($math_op.text);})* SEMI;
-if	options{greedy=true;}: IF expression_logic (logic_op expression_logic {emitter.AddOperation($logic_op.text);})* {emitter.AddIfLabel(true);} statementblock {emitter.AddIfLabel();} (options{greedy=true;}: ELSE statementblock)?;	
+if	: IF expression_logic (logic_op expression_logic {emitter.AddOperation($logic_op.text);})* {emitter.AddIfLabel(true);} statementblock {emitter.AddIfLabel();} (ELSE statementblock)?;	
 
-while	: WHILE LPAREN (expression_logic (logic_op expression_logic {emitter.AddOperation($logic_op.text);})* {emitter.AddCycleLabel(false, true);})? {emitter.AddCycleLabel(false, false, true);} RPAREN
-         statementblock {emitter.AddCycleLabel(false, false, false, false, true);};
+cycle	: CYCLE LPAREN (declaration)? SEMI {emitter.AddCycleLabel(true);} (expression_logic (logic_op expression_logic {emitter.AddOperation($logic_op.text);})* {emitter.AddCycleLabel(false, true);})? {emitter.AddCycleLabel(false, false, true);}
+        SEMI  (assign_exp | dec_or_inc)? {emitter.AddCycleLabel(false, false, false, true);} RPAREN statementblock {emitter.AddCycleLabel(false, false, false, false, true);};
 
 switch	: SWITCH {emitter.AddSwitchLabel(true);} expression {emitter.AddAssignStatement();} LBRACKET (BY const {emitter.AddSwitchLabel(false, true, $const.text);}  ':' statementblock {emitter.AddSwitchLabel(false, false, $const.text);})+ RBRACKET;
 
@@ -36,15 +36,15 @@ assign_exp:	assignment (math_op expression {emitter.AddOperation($math_op.text);
 
 declaration  :	 type  x=ID {emitter.AddDeclarationStatement($x.text);} (COMMA y=ID {emitter.AddDeclarationStatement($y.text);})*  
 	| TINT z=ID EQUAL INT {emitter.AddDeclarationStatement($z.text, $INT.text, true);}
-	| TREAL u=ID EQUAL REAL {emitter.AddDeclarationStatement($u.text, $REAL.text, true);}
+	| TFLOAT u=ID EQUAL FLOAT {emitter.AddDeclarationStatement($u.text, $FLOAT.text, true);}
 	| TCHAR i=ID EQUAL CHAR {emitter.AddDeclarationStatement($i.text, $CHAR.text, true);}
 	| TBOOL j=ID EQUAL BOOL {emitter.AddDeclarationStatement($j.text, $BOOL.text, true);};
 
 statementblock:	statement | LBRACKET statement* RBRACKET;
 
-expression options{greedy=true;}: l=ID {emitter.AddLoadID($l.text);}  math_op r=ID {emitter.AddLoadID($r.text);} {emitter.AddOperation($math_op.text);}
+expression : l=ID {emitter.AddLoadID($l.text);}  math_op r=ID {emitter.AddLoadID($r.text);} {emitter.AddOperation($math_op.text);}
 	| l=ID {emitter.AddLoadID($l.text);} math_op const {emitter.AddLoadConst($const.text);} {emitter.AddOperation($math_op.text);}
-	| l=(INT | REAL | CHAR | QUANC) {emitter.AddLoadConst($l.text);} math_op r=(INT | REAL | CHAR | QUANC) {emitter.AddLoadConst($r.text);} {emitter.AddOperation($math_op.text);}
+	| l=(INT | FLOAT | CHAR | QUANC) {emitter.AddLoadConst($l.text);} math_op r=(INT | FLOAT | CHAR | QUANC) {emitter.AddLoadConst($r.text);} {emitter.AddOperation($math_op.text);}
 	| const {emitter.AddLoadConst($const.text);} math_op ID {emitter.AddLoadID($ID.text);} {emitter.AddOperation($math_op.text);}
 	| LPAREN expression RPAREN
 	| const {emitter.AddLoadConst($const.text);}
@@ -53,7 +53,7 @@ expression options{greedy=true;}: l=ID {emitter.AddLoadID($l.text);}  math_op r=
 
 expression_logic: l=ID {emitter.AddLoadID($l.text);} compare_op r=ID {emitter.AddLoadID($r.text);} {emitter.AddOperation($compare_op.text);}
 	|	l=ID {emitter.AddLoadID($l.text);} compare_op const {emitter.AddLoadConst($const.text);} {emitter.AddOperation($compare_op.text);}
-	|	l=(INT | REAL | CHAR | QUANC) {emitter.AddLoadConst($l.text);} compare_op r=(INT | REAL | CHAR | QUANC) {emitter.AddLoadConst($r.text);} {emitter.AddOperation($compare_op.text);}
+	|	l=(INT | FLOAT | CHAR | QUANC) {emitter.AddLoadConst($l.text);} compare_op r=(INT | FLOAT | CHAR | QUANC) {emitter.AddLoadConst($r.text);} {emitter.AddOperation($compare_op.text);}
 	|	const {emitter.AddLoadConst($const.text);} compare_op r=ID {emitter.AddLoadID($r.text);} {emitter.AddOperation($compare_op.text);}
 	|	LPAREN expression_logic RPAREN
 	|	ID {emitter.AddLoadID($ID.text);}
@@ -62,9 +62,9 @@ expression_logic: l=ID {emitter.AddLoadID($l.text);} compare_op r=ID {emitter.Ad
 
 assignment : ID {emitter.AddLValue($ID.text);} EQUAL expression;
 
-type	:	TINT | TREAL | TCHAR | TBOOL;
+type	:	TINT | TFLOAT | TCHAR | TBOOL;
 
-const : INT | REAL | CHAR | QUANC;
+const : INT | FLOAT | CHAR | QUANC;
 
 dec_or_inc :	ID y=(INC|DEC) {emitter.AddDecOrInc($ID.text, $y.text);}
 	| x=(INC|DEC) ID {emitter.AddDecOrInc($ID.text, $x.text);};
@@ -78,13 +78,13 @@ logic_op: AND|OR;
 	   
 IF	:	'if';
 ELSE 	:	'else';
-WHILE 	:	'while';
+CYCLE 	:	'cycle';
 SWITCH 	:	'switch';
 BY	:	'by';
 
-TINT	:	'int';
-TREAL	:	'real';
-TCHAR	:	'char' | 'chara' | 'charac' | 'charact' | 'characte' | 'character';
+TINT	:	'int' | 'inte' | 'integ' | 'intege' | 'integer';
+TFLOAT	:	'float';
+TCHAR	:	'char';
 TBOOL	:	'bool';
 
 AND	:	'&&';
@@ -112,12 +112,12 @@ SEMI : ';';
 EQUAL	:	'=';
 COMMA	:	',';
 
-ID  :	('a'..'z'|'A'..'Z')+ ('0'..'9');
+ID  :	('a'..'z'|'A'..'Z') ('0'..'9')+ ('a'..'z'|'A'..'Z');
 INT :	'0'..'9'+;
-REAL:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? |   '.' ('0'..'9')+ EXPONENT? |   ('0'..'9')+ EXPONENT;
+FLOAT:   ('0'..'9')+ '.' ('0'..'9')* EXPONENT? |   '.' ('0'..'9')+ EXPONENT? |   ('0'..'9')+ EXPONENT;
 WS  :   ( ' ' | '\t' | '\r' | '\n') {$channel=HIDDEN;};
 CHAR:  '\'' ( ESC_SEQ | ~('\''|'\\') ) '\'';
-BOOL	:	'yes' | 'no';
+BOOL	:	'true' | 'false';
 QUANC: 'F' '1'..'3'+ '0'*;
 
 fragment
