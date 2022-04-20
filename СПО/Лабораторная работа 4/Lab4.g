@@ -9,7 +9,7 @@ options
 {
 	Emitter emitter; 
 	
-	public courseworkParser(ITokenStream input, Emitter emitter): this(input) 
+	public labParser(ITokenStream input, Emitter emitter): this(input) 
 	{
 		this.emitter = emitter;
 	}
