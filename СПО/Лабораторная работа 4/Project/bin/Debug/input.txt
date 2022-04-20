@@ -1,0 +1,14 @@
+﻿bool h7h = true;
+cycle(int i8i = 5; i8i < 10; i8i = (i8i + 2) / 2)
+{
+  n8n = j8j + 3; 
+  if n8h > 5 && (m9m < 5) m9m = m9m + 5;
+  switch n8h 
+	{
+		by 1: k9k++;
+		by 2: {
+			m9m = m9m + 10;
+			n8n = n8n + m9m;
+		}
+	}
+}
